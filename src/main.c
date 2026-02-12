@@ -54,12 +54,10 @@ int main(int argc, char **argv)
         strcmp(argv[1], CMD_UPLOAD1) == 0 ||
         strcmp(argv[1], CMD_UPLOAD2) == 0)
     {
-        char filepath[PATH_MAX];
-        snprintf(filepath, sizeof(filepath), "%s", argv[2]);
-        if (access(filepath, F_OK) == 0)
+        if (access(argv[2], F_OK) == 0)
         {
             char fullpath[PATH_MAX];
-            if (realpath(filepath, fullpath) != NULL)
+            if (realpath(argv[2], fullpath) != NULL)
             {
                 printf("full path: %s\n", fullpath);
             }
@@ -71,7 +69,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            printf("error: file %s does not exist\n", filepath);
+            printf("error: file %s does not exist\n", argv[2]);
             return 1;
         }
     }
