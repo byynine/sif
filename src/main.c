@@ -22,10 +22,65 @@
 //          $ sif u image.png message.txt
 //          $ sif up example.txt
 //          $ sif upload 10.0.2.1-255    (or with ipv6)
+//
+// When calling $ sif up ... the file gets cached and on request from a different computer a tcp connection
+// will be established and the file will be transferred.
+//
+// A simple scan request can also be made, like a "anyone got files?", the computer that's uploaded will be awaiting
+// for such a request and reply accordingly.
 
 #include <stdio.h>
+#include <limits.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
 
-int main(void)
+// Command definitions.
+#define CMD_UPLOAD0 "u"
+#define CMD_UPLOAD1 "up"
+#define CMD_UPLOAD2 "upload"
+
+typedef struct {
+    size_t idx;
+    char filepath[PATH_MAX];
+} upload_metadata;
+
+int main(int argc, char **argv)
 {
+    if (argc != 3) { printf("error: invalid argument count\n"); return 1; }
+
+    // Upload command.
+    if (strcmp(argv[1], CMD_UPLOAD0) == 0 ||
+        strcmp(argv[1], CMD_UPLOAD1) == 0 ||
+        strcmp(argv[1], CMD_UPLOAD2) == 0)
+    {
+        char filepath[PATH_MAX];
+        snprintf(filepath, sizeof(filepath), "%s", argv[2]);
+        if (access(filepath, F_OK) == 0)
+        {
+            char fullpath[PATH_MAX];
+            if (realpath(filepath, fullpath) != NULL)
+            {
+                printf("full path: %s\n", fullpath);
+            }
+            else
+            {
+                printf("error: couldn't get full path\n");
+                return 1;
+            }
+        }
+        else
+        {
+            printf("error: file %s does not exist\n", filepath);
+            return 1;
+        }
+    }
+    else
+    {
+        printf("error: invalid command\n");
+        return 1;
+    }
+
+
     return 0;
 }
