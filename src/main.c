@@ -87,27 +87,29 @@ int main(int argc, char **argv)
                 return 1;
             }
 
+        // TODO: Read from file, get the largest index and append respectively.
+        // TODO: Detect duplicate filepaths and do not append.
+
         FILE *cache_file = fopen(CACHE_FILEPATH, "w");
         if (!cache_file) { printf("error: couldn't write to %s", CACHE_FILEPATH); return 1; }
         
+        // Define index for filepath.
         size_t idx = 0;
-
+        
         upload_metadata metadata;
-
         metadata.idx = idx;
         snprintf(metadata.filepath, sizeof(metadata.filepath), "%s", fullpath);
 
+        // Write to cache file.
         fprintf(cache_file, CACHE_FORMAT_OUT, metadata.idx, metadata.filepath);
 
-
-        printf("full path: %s\n", fullpath);
+        printf("uploaded %s\n", fullpath);
     }
     else
     {
         printf("error: invalid command\n");
         return 1;
     }
-
 
     return 0;
 }
