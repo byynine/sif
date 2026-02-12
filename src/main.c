@@ -30,14 +30,21 @@
 // for such a request and reply accordingly.
 
 #include <stdio.h>
+#include <errno.h>
 #include <limits.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 // Cache path definitions.
 #define CACHE_FILEPATH "/home/nine/.local/share/sif/cache"
-#define CACHE_DIRPATH "/home/nine/.local/share/sif"
+#define CACHE_DIRPATH  "/home/nine/.local/share/sif"
+
+// Serialization formats.
+#define CACHE_FORMAT_IN_FMT(x) "%ld \"%"#x"[^\"]\"\n"
+#define CACHE_FORMAT_IN CACHE_FORMAT_IN_FMT(PATH_MAX - 1)
+#define CACHE_FORMAT_OUT "%ld \"%s\"\n"
 
 // Command definitions.
 #define CMD_UPLOAD0 "u"
@@ -64,12 +71,34 @@ int main(int argc, char **argv)
             return 1;
         }
 
+        // Get full filepath to then cache.
         char fullpath[PATH_MAX];
         if (realpath(argv[2], fullpath) == NULL)
         {
             printf("error: couldn't get full path\n");
             return 1;
         }
+
+        // Check if cache directory exists, if not then create.
+        if (mkdir(CACHE_DIRPATH, 0755) == -1)
+            if (errno != EEXIST)
+            {
+                printf("error: failure when creating directory %s", CACHE_DIRPATH);
+                return 1;
+            }
+
+        FILE *cache_file = fopen(CACHE_FILEPATH, "w");
+        if (!cache_file) { printf("error: couldn't write to %s", CACHE_FILEPATH); return 1; }
+        
+        size_t idx = 0;
+
+        upload_metadata metadata;
+
+        metadata.idx = idx;
+        snprintf(metadata.filepath, sizeof(metadata.filepath), "%s", fullpath);
+
+        fprintf(cache_file, CACHE_FORMAT_OUT, metadata.idx, metadata.filepath);
+
 
         printf("full path: %s\n", fullpath);
     }
