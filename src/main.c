@@ -35,6 +35,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+// Cache path definitions.
+#define CACHE_FILEPATH "/home/nine/.local/share/sif/cache"
+#define CACHE_DIRPATH "/home/nine/.local/share/sif"
+
 // Command definitions.
 #define CMD_UPLOAD0 "u"
 #define CMD_UPLOAD1 "up"
@@ -54,24 +58,20 @@ int main(int argc, char **argv)
         strcmp(argv[1], CMD_UPLOAD1) == 0 ||
         strcmp(argv[1], CMD_UPLOAD2) == 0)
     {
-        if (access(argv[2], F_OK) == 0)
-        {
-            char fullpath[PATH_MAX];
-            if (realpath(argv[2], fullpath) != NULL)
-            {
-                printf("full path: %s\n", fullpath);
-            }
-            else
-            {
-                printf("error: couldn't get full path\n");
-                return 1;
-            }
-        }
-        else
+        if (access(argv[2], F_OK) != 0)
         {
             printf("error: file %s does not exist\n", argv[2]);
             return 1;
         }
+
+        char fullpath[PATH_MAX];
+        if (realpath(argv[2], fullpath) == NULL)
+        {
+            printf("error: couldn't get full path\n");
+            return 1;
+        }
+
+        printf("full path: %s\n", fullpath);
     }
     else
     {
